@@ -1,5 +1,6 @@
 import re
 from aqt import mw
+from urllib.parse import urlparse
 
 # Default settings for the add-on
 DEFAULT_SETTINGS = {
@@ -35,9 +36,12 @@ def validate_url(url):
     """
     Validate the URL format. Ensure it starts with 'http://' or 'https://' and contains exactly one '%s' placeholder.
     """
-    url_pattern = re.compile(r"https?://\S+")
-    if not url_pattern.match(url):
-        return "Invalid URL format. Please enter a valid URL starting with 'http://' or 'https://'."
-    if url.count("%s") != 1:
-        return "The URL must contain exactly one '%s' placeholder."
-    return None
+    try:
+        result = urlparse(url)
+        if not all([result.scheme, result.netloc]):
+            return "Invalid URL format. Please enter a valid URL starting with 'http://' or 'https://'."
+        if url.count("%s") != 1:
+            return "The URL must contain exactly one '%s' placeholder."
+        return None
+    except Exception as e:
+        return f"Invalid URL format: {str(e)}"
