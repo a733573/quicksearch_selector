@@ -2,12 +2,15 @@ from aqt.qt import *
 from aqt import mw
 from .utils import load_settings, save_settings, validate_url, DEFAULT_SETTINGS
 
-# add_new_row 関数を open_settings の外で定義
-
 
 def add_new_row(table):
+    """
+    Add a new row to the table with a delete button, enabled checkbox, and empty label/URL fields.
+    """
     row = table.rowCount()
     table.insertRow(row)
+
+    # Delete button
     delete_button = QPushButton("×")
     delete_button.setStyleSheet("""
         QPushButton {
@@ -24,18 +27,20 @@ def add_new_row(table):
     delete_button.clicked.connect(lambda _, row=row: table.removeRow(row))
     table.setCellWidget(row, 0, delete_button)
 
-    # Enabled チェックボックス
+    # Enabled checkbox
     enabled_checkbox = QCheckBox()
     enabled_checkbox.setChecked(True)
     table.setCellWidget(row, 1, enabled_checkbox)
 
-    # Label と URL
+    # Label and URL fields
     table.setItem(row, 2, QTableWidgetItem(""))
     table.setItem(row, 3, QTableWidgetItem(""))
 
 
 def open_settings():
-    # 設定を読み込む
+    """
+    Open the settings dialog to configure the add-on.
+    """
     settings = load_settings()
 
     dialog = QDialog(mw)
@@ -43,7 +48,7 @@ def open_settings():
     dialog.resize(600, 400)
     layout = QVBoxLayout()
 
-    # ショートカットキーの入力欄
+    # Shortcut key input
     shortcut_layout = QHBoxLayout()
     shortcut_label = QLabel("Shortcut Key:")
     shortcut_edit = QKeySequenceEdit(QKeySequence(
@@ -52,7 +57,7 @@ def open_settings():
     shortcut_layout.addWidget(shortcut_edit)
     layout.addLayout(shortcut_layout)
 
-    # 自動ポップアップの設定
+    # Auto-popup settings
     auto_popup_layout = QHBoxLayout()
     auto_popup_enabled = QCheckBox("Enable Auto Popup")
     auto_popup_enabled.setChecked(settings.get(
@@ -61,27 +66,26 @@ def open_settings():
 
     auto_popup_delay_label = QLabel("Auto Popup Delay (ms):")
     auto_popup_delay_edit = QSpinBox()
-    auto_popup_delay_edit.setRange(100, 5000)  # 100msから5000msまでの範囲
+    auto_popup_delay_edit.setRange(100, 5000)  # Range from 100ms to 5000ms
     auto_popup_delay_edit.setValue(settings.get(
         "auto_popup_delay", DEFAULT_SETTINGS["auto_popup_delay"]))
     auto_popup_layout.addWidget(auto_popup_delay_label)
     auto_popup_layout.addWidget(auto_popup_delay_edit)
-
     layout.addLayout(auto_popup_layout)
 
-    # テーブルの作成
+    # Table for buttons
     table = QTableWidget()
-    table.setColumnCount(4)  # 列数を4に変更 (Delete, Enabled, Label, URL)
+    table.setColumnCount(4)  # Columns: Delete, Enabled, Label, URL
     table.setHorizontalHeaderLabels(
-        ["Delete", "Enabled", "Label", "URL (must contain %s, which will be replaced by the selected text)"])
+        ["Delete", "Enabled", "Label", "URL (must contain %s)"])
     table.setRowCount(len(settings["buttons"]))
     table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
     table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
     table.verticalHeader().setVisible(False)
 
-    # テーブルに行を追加
+    # Populate table with existing buttons
     for i, button_info in enumerate(settings["buttons"]):
-        # Delete ボタン
+        # Delete button
         delete_button = QPushButton("×")
         delete_button.setStyleSheet("""
             QPushButton {
@@ -98,16 +102,16 @@ def open_settings():
         delete_button.clicked.connect(lambda _, row=i: table.removeRow(row))
         table.setCellWidget(i, 0, delete_button)
 
-        # Enabled チェックボックス
+        # Enabled checkbox
         enabled_checkbox = QCheckBox()
         enabled_checkbox.setChecked(button_info.get("enabled", True))
         table.setCellWidget(i, 1, enabled_checkbox)
 
-        # Label と URL
+        # Label and URL
         table.setItem(i, 2, QTableWidgetItem(button_info["label"]))
         table.setItem(i, 3, QTableWidgetItem(button_info["url"]))
 
-    # テーブルの列幅を調整
+    # Adjust column widths
     table.horizontalHeader().setSectionResizeMode(
         0, QHeaderView.ResizeMode.ResizeToContents)
     table.horizontalHeader().setSectionResizeMode(
@@ -116,23 +120,20 @@ def open_settings():
         2, QHeaderView.ResizeMode.ResizeToContents)
     table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
 
-    # Move Up と Move Down ボタン
+    # Move Up and Move Down buttons
     move_up_button = QPushButton("Move Up")
     move_down_button = QPushButton("Move Down")
 
-    # Move Up ボタンの動作
     def move_up():
+        """Move the selected row up."""
         current_row = table.currentRow()
         if current_row > 0:
-            # セルウィジェット（×ボタンとチェックボックス）を取得
             delete_button = table.cellWidget(current_row, 0)
             enabled_checkbox = table.cellWidget(current_row, 1)
-            # 行を移動
             table.insertRow(current_row - 1)
             for col in range(table.columnCount()):
                 table.setItem(current_row - 1, col,
                               table.takeItem(current_row + 1, col))
-                # セルウィジェットを移動
                 if col == 0:
                     table.setCellWidget(current_row - 1, col, delete_button)
                 elif col == 1:
@@ -140,19 +141,16 @@ def open_settings():
             table.removeRow(current_row + 1)
             table.setCurrentCell(current_row - 1, 0)
 
-    # Move Down ボタンの動作
     def move_down():
+        """Move the selected row down."""
         current_row = table.currentRow()
         if current_row < table.rowCount() - 1:
-            # セルウィジェット（×ボタンとチェックボックス）を取得
             delete_button = table.cellWidget(current_row, 0)
             enabled_checkbox = table.cellWidget(current_row, 1)
-            # 行を移動
             table.insertRow(current_row + 2)
             for col in range(table.columnCount()):
                 table.setItem(current_row + 2, col,
                               table.takeItem(current_row, col))
-                # セルウィジェットを移動
                 if col == 0:
                     table.setCellWidget(current_row + 2, col, delete_button)
                 elif col == 1:
@@ -160,37 +158,40 @@ def open_settings():
             table.removeRow(current_row)
             table.setCurrentCell(current_row + 1, 0)
 
-    # ボタンに動作を接続
     move_up_button.clicked.connect(move_up)
     move_down_button.clicked.connect(move_down)
 
-    # Add Button と Save Settings ボタン
+    # Add and Save buttons
     add_button = QPushButton("Add")
     save_button = QPushButton("Save")
-    add_button.clicked.connect(lambda: add_new_row(table))  # add_new_row を参照
+    add_button.clicked.connect(lambda: add_new_row(table))
     save_button.clicked.connect(
-        lambda: save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit))
+        lambda: save_settings_from_table(
+            table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit)
+    )
 
-    # ボタンを配置するレイアウト
+    # Button layout
     button_layout = QGridLayout()
     button_layout.addWidget(move_up_button, 0, 0)
     button_layout.addWidget(move_down_button, 1, 0)
     button_layout.addWidget(add_button, 0, 1)
     button_layout.addWidget(save_button, 1, 1)
 
-    # レイアウトにテーブルとボタンを追加
+    # Add table and buttons to layout
     layout.addWidget(table)
     layout.addLayout(button_layout)
 
     dialog.setLayout(layout)
     dialog.closeEvent = lambda event: confirm_close(
-        event, table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit)
+        event, table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit
+    )
     dialog.exec()
-
-# 以下のコードはそのまま
 
 
 def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit):
+    """
+    Save the settings from the table to the configuration.
+    """
     settings = {"buttons": []}
     labels = set()
     for row in range(table.rowCount()):
@@ -219,7 +220,7 @@ def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, a
             settings["buttons"].append(
                 {"label": label, "url": url, "enabled": enabled})
 
-    # ショートカットキーの保存
+    # Save shortcut key
     shortcut = shortcut_edit.keySequence().toString()
     if not shortcut:
         QMessageBox.warning(
@@ -227,17 +228,19 @@ def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, a
         shortcut = DEFAULT_SETTINGS["shortcut"]
     settings["shortcut"] = shortcut
 
-    # 自動ポップアップの設定を保存
+    # Save auto-popup settings
     settings["auto_popup_enabled"] = auto_popup_enabled.isChecked()
     settings["auto_popup_delay"] = auto_popup_delay_edit.value()
 
-    # 設定を保存
+    # Save settings
     save_settings(settings)
     dialog.accept()
 
 
 def confirm_close(event, table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit):
-    # 現在の設定を取得
+    """
+    Confirm if the user wants to save changes before closing the settings dialog.
+    """
     current_settings = {"buttons": []}
     for row in range(table.rowCount()):
         label_item = table.item(row, 2)
@@ -252,7 +255,6 @@ def confirm_close(event, table, dialog, shortcut_edit, auto_popup_enabled, auto_
                 current_settings["buttons"].append(
                     {"label": label, "url": url, "enabled": enabled})
 
-    # 設定を比較
     saved_settings = load_settings()
     if (current_settings["buttons"] != saved_settings["buttons"] or
         shortcut_edit.keySequence().toString() != saved_settings.get("shortcut", DEFAULT_SETTINGS["shortcut"]) or
@@ -264,7 +266,8 @@ def confirm_close(event, table, dialog, shortcut_edit, auto_popup_enabled, auto_
             "You have unsaved changes. Do you want to save them?")
         confirm_dialog.setIcon(QMessageBox.Icon.Warning)
         confirm_dialog.setStandardButtons(
-            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel)
+            QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel
+        )
         confirm_dialog.setDefaultButton(QMessageBox.StandardButton.Save)
 
         result = confirm_dialog.exec()
@@ -280,8 +283,11 @@ def confirm_close(event, table, dialog, shortcut_edit, auto_popup_enabled, auto_
 
 
 def on_config_action():
+    """
+    Open the settings dialog when the configuration action is triggered.
+    """
     open_settings()
 
 
-# Add-ons の Config に設定画面を追加
+# Register the settings dialog with the add-on manager
 mw.addonManager.setConfigAction(__name__, on_config_action)

@@ -1,49 +1,51 @@
 from aqt.qt import *
 from aqt import mw
-import aqt.utils
 import webbrowser
-from .utils import load_settings, DEFAULT_SETTINGS  # DEFAULT_SETTINGS を追加
-from aqt.utils import showInfo
+from .utils import load_settings, DEFAULT_SETTINGS
 
-# グローバル変数としてタイマーを定義
+# Global variable for the popup timer
 popup_timer = None
 
 
 def show_popup(text, pos):
+    """
+    Display a popup menu with buttons for searching the selected text.
+    """
     settings = load_settings()
     dialog = QDialog(mw)
     dialog.setWindowTitle("")
     dialog.setWindowFlags(
         Qt.WindowType.FramelessWindowHint | Qt.WindowType.Popup)
     layout = QVBoxLayout()
-    layout.setContentsMargins(0, 0, 0, 0)  # 余白を完全になくす
-    layout.setSpacing(0)  # ボタン間のスペースを完全になくす
+    layout.setContentsMargins(0, 0, 0, 0)  # Remove margins
+    layout.setSpacing(0)  # Remove spacing between buttons
 
+    # Add buttons for each enabled search option
     for button_info in settings["buttons"]:
-        if not button_info.get("enabled", True):  # 休止状態のボタンをスキップ
+        if not button_info.get("enabled", True):  # Skip disabled buttons
             continue
         button = QPushButton(button_info["label"])
-        button.setFixedHeight(35)  # ボタンの高さを 35px に調整
+        button.setFixedHeight(35)  # Set button height
         button.setStyleSheet("""
             QPushButton {
-                font-size: 16px;  /* 文字サイズを大きくする */
-                font-family: 'Segoe UI', 'Arial', sans-serif;  /* モダンなフォント */
-                font-weight: 500;  /* フォントの太さを Medium に */
-                padding: 5px;  /* パディングを最小限に */
+                font-size: 16px;
+                font-family: 'Segoe UI', 'Arial', sans-serif;
+                font-weight: 500;
+                padding: 5px;
                 border: 1px solid #555;
-                border-radius: 0;  /* 角を丸くしない */
-                background-color: #444;  /* ボタンの背景色 */
+                border-radius: 0;
+                background-color: #444;
                 color: white;
                 text-align: left;
-                text-overflow: ellipsis;  /* 長いテキストを省略表示 */
-                overflow: hidden;  /* はみ出たテキストを非表示 */
-                max-width: 150px;  /* 最大幅を設定 */
-                margin: 0;  /* マージンをなくす */
+                text-overflow: ellipsis;
+                overflow: hidden;
+                max-width: 150px;
+                margin: 0;
             }
             QPushButton:hover {
-                background-color: #666;  /* ホバー時の背景色 */
-                border: 1px solid #777;  /* ホバー時のボーダー色 */
-                color: #fff;  /* ホバー時のテキスト色 */
+                background-color: #666;
+                border: 1px solid #777;
+                color: #fff;
             }
         """)
         button.clicked.connect(
@@ -51,17 +53,18 @@ def show_popup(text, pos):
         layout.addWidget(button)
 
     dialog.setLayout(layout)
-    dialog.setFixedWidth(150)  # ポップアップの横幅を 150px に固定
+    dialog.setFixedWidth(150)  # Set popup width
     dialog.adjustSize()
     dialog.setStyleSheet("""
         QDialog {
-            border: 2px solid #666;  /* ポップアップのボーダー色 */
-            border-radius: 0;  /* 角を丸くしない */
-            background-color: #333;  /* ポップアップの背景色 */
-            padding: 0;  /* パディングをなくす */
+            border: 2px solid #666;
+            border-radius: 0;
+            background-color: #333;
+            padding: 0;
         }
     """)
 
+    # Adjust popup position to fit within the screen
     screen_geometry = QApplication.primaryScreen().geometry()
     popup_width = dialog.width()
     popup_height = dialog.height()
@@ -80,6 +83,10 @@ def show_popup(text, pos):
 
 
 class CloseOnClickOutsideFilter(QObject):
+    """
+    Event filter to close the popup when clicking outside of it.
+    """
+
     def __init__(self, dialog):
         super().__init__()
         self.dialog = dialog
@@ -92,11 +99,15 @@ class CloseOnClickOutsideFilter(QObject):
 
 
 def open_browser(base_url, text, dialog):
+    """
+    Open the selected text in the browser using the provided URL template.
+    """
     url = base_url.replace("%s", text)
     webbrowser.open(url)
     dialog.close()
 
 
+# JavaScript code to get the position of the selected text
 js_code = """
 (function() {
     const selection = window.getSelection();
@@ -109,11 +120,17 @@ js_code = """
 
 
 def on_shortcut_triggered():
+    """
+    Triggered when the shortcut key is pressed. Gets the selected text and its position.
+    """
     webview = mw.web
     webview.page().runJavaScript(js_code, lambda result: handle_js_result(result, webview))
 
 
 def handle_js_result(result, webview):
+    """
+    Handle the result of the JavaScript execution and show the popup.
+    """
     if result:
         text = webview.selectedText()
         if text:
@@ -124,11 +141,17 @@ def handle_js_result(result, webview):
 
 
 def setup_shortcut():
+    """
+    Set up the shortcut key for triggering the popup.
+    """
     shortcut = QShortcut(QKeySequence("Alt+A"), mw)
     shortcut.activated.connect(on_shortcut_triggered)
 
 
 def on_selection_changed():
+    """
+    Triggered when the text selection changes. Starts a timer to show the popup automatically.
+    """
     global popup_timer
     settings = load_settings()
     if not settings.get("auto_popup_enabled", DEFAULT_SETTINGS["auto_popup_enabled"]):
@@ -137,7 +160,7 @@ def on_selection_changed():
     webview = mw.web
     text = webview.selectedText().strip()
 
-    # マウスの左ボタンが離れていることと選択中のテキストが空でないことを確認
+    # Check if text is selected and the left mouse button is not pressed
     if text:
         if popup_timer:
             popup_timer.stop()
@@ -145,13 +168,19 @@ def on_selection_changed():
         popup_timer.setSingleShot(True)
         popup_timer.timeout.connect(lambda: handle_selection_timeout(webview))
         popup_timer.start(settings.get("auto_popup_delay",
-                          DEFAULT_SETTINGS["auto_popup_delay"]))  # 設定された時間待機
+                          DEFAULT_SETTINGS["auto_popup_delay"]))
 
 
 def handle_selection_timeout(webview):
+    """
+    Handle the timeout event for the auto-popup timer.
+    """
     webview.page().runJavaScript(js_code, lambda result: handle_js_result(result, webview))
 
 
 def setup_auto_popup():
+    """
+    Set up the auto-popup feature by connecting to the selectionChanged signal.
+    """
     webview = mw.web
     webview.page().selectionChanged.connect(on_selection_changed)
