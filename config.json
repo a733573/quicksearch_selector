@@ -6,19 +6,10 @@
       "enabled": true
     },
     {
-      "label": "Cambridge",
-      "url": "https://dictionary.cambridge.org/dictionary/english/%s",
-      "enabled": true
-    },
-    {
-      "label": "Oxford",
-      "url": "https://www.oxfordlearnersdictionaries.com/definition/english/%s",
-      "enabled": true
-    },
-    {
-      "label": "DeepL",
-      "url": "https://www.deepl.com/translator#en/ja/%s",
+      "label": "Wiktionary",
+      "url": "https://en.wiktionary.org/wiki/%s",
       "enabled": true
     }
-  ]
+  ],
+  "shortcut": "Ctrl+Shift+S"
 }

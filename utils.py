@@ -1,21 +1,21 @@
 import re
 from aqt import mw
+from aqt.utils import showInfo
 
 # 設定のデフォルト値
 DEFAULT_SETTINGS = {
     "buttons": [
         {"label": "Google", "url": "https://www.google.com/search?q=%s", "enabled": True},
-        {"label": "Cambridge",
-            "url": "https://dictionary.cambridge.org/dictionary/english/%s", "enabled": True},
-        {"label": "Oxford", "url": "https://www.oxfordlearnersdictionaries.com/definition/english/%s", "enabled": True},
-        {"label": "DeepL", "url": "https://www.deepl.com/translator#en/ja/%s", "enabled": True}
-    ]
+        {"label": "Wiktionary",
+            "url": "https://en.wiktionary.org/wiki/%s", "enabled": True}
+    ],
+    "shortcut": "Ctrl+Shift+S",
 }
 
 
 def load_settings():
     settings = mw.addonManager.getConfig(__name__)
-    if not settings:
+    if settings is None:
         settings = DEFAULT_SETTINGS
         mw.addonManager.writeConfig(__name__, settings)
     return settings

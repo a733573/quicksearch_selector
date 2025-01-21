@@ -1,25 +1,31 @@
-from aqt.utils import showInfo
-from .utils import validate_url
-from aqt import mw
 from aqt.qt import *
+from aqt import mw
+from .utils import load_settings, save_settings, validate_url, DEFAULT_SETTINGS
 
 
 def open_settings():
-    # Add-ons の Config から設定を読み込む
-    settings = mw.addonManager.getConfig(__name__)
-    if settings is None:
-        settings = {"buttons": []}  # デフォルトの設定
+    # 設定を読み込む
+    settings = load_settings()
 
     dialog = QDialog(mw)
     dialog.setWindowTitle("Popup Search Settings")
     dialog.resize(600, 400)
     layout = QVBoxLayout()
 
+    # ショートカットキーの入力欄
+    shortcut_layout = QHBoxLayout()
+    shortcut_label = QLabel("Shortcut Key:")
+    shortcut_edit = QKeySequenceEdit(QKeySequence(
+        settings.get("shortcut", DEFAULT_SETTINGS["shortcut"])))
+    shortcut_layout.addWidget(shortcut_label)
+    shortcut_layout.addWidget(shortcut_edit)
+    layout.addLayout(shortcut_layout)
+
     # テーブルの作成
     table = QTableWidget()
     table.setColumnCount(4)  # 列数を4に変更 (Delete, Enabled, Label, URL)
     table.setHorizontalHeaderLabels(
-        ["Delete", "Enabled", "Label", "URL (must contain %s, which will be replaced with selected text)"])
+        ["Delete", "Enabled", "Label", "URL (must contain %s, which will be replaced by the selected text)"])
     table.setRowCount(len(settings["buttons"]))
     table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
     table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
@@ -62,7 +68,7 @@ def open_settings():
         2, QHeaderView.ResizeMode.ResizeToContents)
     table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
 
-    # Move Up と Move Down ボタンの作成
+    # Move Up と Move Down ボタン
     move_up_button = QPushButton("Move Up")
     move_down_button = QPushButton("Move Down")
 
@@ -115,21 +121,22 @@ def open_settings():
     save_button = QPushButton("Save")
     add_button.clicked.connect(lambda: add_new_row(table))
     save_button.clicked.connect(
-        lambda: save_settings_from_table(table, dialog))
+        lambda: save_settings_from_table(table, dialog, shortcut_edit))
 
     # ボタンを配置するレイアウト
     button_layout = QGridLayout()
-    button_layout.addWidget(move_up_button, 0, 0)  # 左上
-    button_layout.addWidget(move_down_button, 1, 0)  # 左下
-    button_layout.addWidget(add_button, 0, 1)  # 右上
-    button_layout.addWidget(save_button, 1, 1)  # 右下
+    button_layout.addWidget(move_up_button, 0, 0)
+    button_layout.addWidget(move_down_button, 1, 0)
+    button_layout.addWidget(add_button, 0, 1)
+    button_layout.addWidget(save_button, 1, 1)
 
     # レイアウトにテーブルとボタンを追加
     layout.addWidget(table)
     layout.addLayout(button_layout)
 
     dialog.setLayout(layout)
-    dialog.closeEvent = lambda event: confirm_close(event, table, dialog)
+    dialog.closeEvent = lambda event: confirm_close(
+        event, table, dialog, shortcut_edit)
     dialog.exec()
 
 
@@ -162,7 +169,7 @@ def add_new_row(table):
     table.setItem(row, 3, QTableWidgetItem(""))
 
 
-def save_settings_from_table(table, dialog):
+def save_settings_from_table(table, dialog, shortcut_edit):
     settings = {"buttons": []}
     labels = set()
     for row in range(table.rowCount()):
@@ -191,12 +198,20 @@ def save_settings_from_table(table, dialog):
             settings["buttons"].append(
                 {"label": label, "url": url, "enabled": enabled})
 
-    # Add-ons の Config に設定を保存
-    mw.addonManager.writeConfig(__name__, settings)
+    # ショートカットキーの保存
+    shortcut = shortcut_edit.keySequence().toString()
+    if not shortcut:
+        QMessageBox.warning(
+            mw, "Invalid Shortcut", "Shortcut key cannot be empty. Using default shortcut.")
+        shortcut = DEFAULT_SETTINGS["shortcut"]
+    settings["shortcut"] = shortcut
+
+    # 設定を保存
+    save_settings(settings)
     dialog.accept()
 
 
-def confirm_close(event, table, dialog):
+def confirm_close(event, table, dialog, shortcut_edit):
     # 現在の設定を取得
     current_settings = {"buttons": []}
     for row in range(table.rowCount()):
@@ -211,15 +226,10 @@ def confirm_close(event, table, dialog):
             if label and url:
                 current_settings["buttons"].append(
                     {"label": label, "url": url, "enabled": enabled})
-        else:
-            showInfo(f"Missing data in row {row}")  # デバッグ用
 
     # 設定を比較
-    saved_settings = mw.addonManager.getConfig(__name__)
-    if saved_settings is None:
-        saved_settings = {"buttons": []}
-
-    if current_settings["buttons"] != saved_settings["buttons"]:
+    saved_settings = load_settings()
+    if current_settings["buttons"] != saved_settings["buttons"] or shortcut_edit.keySequence().toString() != saved_settings.get("shortcut", DEFAULT_SETTINGS["shortcut"]):
         confirm_dialog = QMessageBox(mw)
         confirm_dialog.setWindowTitle("Unsaved Changes")
         confirm_dialog.setText(
@@ -231,7 +241,7 @@ def confirm_close(event, table, dialog):
 
         result = confirm_dialog.exec()
         if result == QMessageBox.StandardButton.Save:
-            save_settings_from_table(table, dialog)
+            save_settings_from_table(table, dialog, shortcut_edit)
         elif result == QMessageBox.StandardButton.Discard:
             event.accept()
         elif result == QMessageBox.StandardButton.Cancel:
