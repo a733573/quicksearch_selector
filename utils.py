@@ -8,7 +8,14 @@ from aqt.qt import QShortcut, QAction
 DEFAULT_SETTINGS = {
     "buttons": [
         {"label": "Google", "url": "https://www.google.com/search?q=%s", "enabled": True},
-        {"label": "Wiktionary", "url": "https://en.wiktionary.org/wiki/%s", "enabled": True}
+        {"label": "Wiktionary", "url": "https://en.wiktionary.org/wiki/%s", "enabled": True},
+        {"label": "Oxford", "url": "https://www.oxfordlearnersdictionaries.com/us/search/english/?q=%s", "enabled": True},
+        {"label": "YouGlish",
+            "url": "https://youglish.com/pronounce/%s/english/us?", "enabled": True},
+        {"label": "Google Images",
+            "url": "https://www.google.com/search?tbm=isch&q=%s", "enabled": True},
+        {"label": "DeepL(en-ja)",
+         "url": "https://www.deepl.com/en/translator#en/ja/%s", "enabled": True},
     ],
     "shortcut": "Ctrl+Shift+S",
     "auto_popup_enabled": True,  # Enable/disable auto-popup

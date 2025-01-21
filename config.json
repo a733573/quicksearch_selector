@@ -9,6 +9,26 @@
       "label": "Wiktionary",
       "url": "https://en.wiktionary.org/wiki/%s",
       "enabled": true
+    },
+    {
+      "label": "Oxford",
+      "url": "https://www.oxfordlearnersdictionaries.com/us/search/english/?q=%s",
+      "enabled": true
+    },
+    {
+      "label": "YouGlish",
+      "url": "https://youglish.com/pronounce/%s/english/us?",
+      "enabled": true
+    },
+    {
+      "label": "Google Images",
+      "url": "https://www.google.com/search?tbm=isch&q=%s",
+      "enabled": true
+    },
+    {
+      "label": "DeepL(en-ja)",
+      "url": "https://www.deepl.com/en/translator#en/ja/%s",
+      "enabled": true
     }
   ],
   "shortcut": "Ctrl+Shift+S",
