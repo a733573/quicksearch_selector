@@ -8,6 +8,9 @@ current_shortcut = None  # Track the current shortcut
 
 
 def show_popup(text, pos):
+    """
+    Display a popup with search buttons based on the selected text.
+    """
     settings = load_settings()
     dialog = QDialog(mw)
     dialog.setWindowTitle("")
@@ -66,7 +69,7 @@ def show_popup(text, pos):
     popup_x = pos.x()
     popup_y = pos.y()
 
-    # ポップアップが画面外に出ないように調整
+    # Adjust the popup position to ensure it stays within the screen bounds
     if popup_x + popup_width > screen_geometry.width():
         popup_x = screen_geometry.width() - popup_width
     if popup_y + popup_height > screen_geometry.height():
@@ -79,6 +82,10 @@ def show_popup(text, pos):
 
 
 class CloseOnClickOutsideFilter(QObject):
+    """
+    Close the popup when the user clicks outside of it.
+    """
+
     def __init__(self, dialog):
         super().__init__()
         self.dialog = dialog
@@ -91,6 +98,9 @@ class CloseOnClickOutsideFilter(QObject):
 
 
 def open_browser(base_url, text, dialog):
+    """
+    Open the selected URL in the default web browser.
+    """
     url = base_url.replace("%s", text)
     webbrowser.open(url)
     dialog.close()
@@ -110,11 +120,17 @@ js_code = """
 
 
 def on_shortcut_triggered():
+    """
+    Triggered when the shortcut key is pressed. Retrieves the selected text and its position.
+    """
     webview = mw.web
     webview.page().runJavaScript(js_code, lambda result: handle_js_result(result, webview))
 
 
 def handle_js_result(result, webview):
+    """
+    Handle the result of the JavaScript code execution.
+    """
     if result:
         text = webview.selectedText()
         if text:
@@ -125,24 +141,30 @@ def handle_js_result(result, webview):
 
 
 def setup_shortcut():
+    """
+    Set up the shortcut key for triggering the popup.
+    """
     global current_shortcut
     settings = load_settings()
     shortcut_key = settings.get("shortcut", DEFAULT_SETTINGS["shortcut"])
 
-    # 既存のショートカットを削除
+    # Remove the existing shortcut if it exists
     if current_shortcut:
         current_shortcut.setEnabled(False)
         current_shortcut.deleteLater()
         current_shortcut = None
 
-    # 新しいショートカットを設定
+    # Set up the new shortcut
     current_shortcut = QShortcut(QKeySequence(shortcut_key), mw)
     current_shortcut.setObjectName(
-        "search_selected_text_shortcut")  # アドオンのショートカットを識別するための名前
+        "search_selected_text_shortcut")  # Identify the shortcut
     current_shortcut.activated.connect(on_shortcut_triggered)
 
 
 def on_selection_changed():
+    """
+    Triggered when the user selects text in the Anki browser.
+    """
     global popup_timer
     settings = load_settings()
     if not settings.get("auto_popup_enabled", DEFAULT_SETTINGS["auto_popup_enabled"]):
@@ -162,9 +184,15 @@ def on_selection_changed():
 
 
 def handle_selection_timeout(webview):
+    """
+    Handle the timeout event for the auto-popup feature.
+    """
     webview.page().runJavaScript(js_code, lambda result: handle_js_result(result, webview))
 
 
 def setup_auto_popup():
+    """
+    Set up the auto-popup feature that triggers when text is selected.
+    """
     webview = mw.web
     webview.page().selectionChanged.connect(on_selection_changed)

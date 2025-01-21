@@ -3,7 +3,7 @@ from .settings import on_config_action
 from .popup import setup_shortcut, setup_auto_popup
 from aqt.utils import showWarning
 
-# Register the add-on's configuration action
+# Register the add-on's configuration action with Anki
 mw.addonManager.setConfigAction(__name__, on_config_action)
 
 try:

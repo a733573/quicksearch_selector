@@ -5,6 +5,9 @@ from .popup import setup_shortcut
 
 
 def add_new_row(table):
+    """
+    Add a new row to the settings table.
+    """
     row = table.rowCount()
     table.insertRow(row)
     delete_button = QPushButton("×")
@@ -33,10 +36,9 @@ def add_new_row(table):
 
 def reset_settings(table, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit):
     """
-    設定をデフォルト値にリセットしますが、保存はしません。
-    リセット前にユーザーに確認を求めます。
+    Reset settings to default values without saving.
+    Ask for user confirmation before resetting.
     """
-    # ユーザーに確認
     confirm = QMessageBox.question(
         mw,
         "Confirm Reset",
@@ -44,9 +46,9 @@ def reset_settings(table, shortcut_edit, auto_popup_enabled, auto_popup_delay_ed
         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
     )
     if confirm != QMessageBox.StandardButton.Yes:
-        return  # ユーザーが「No」を選択した場合、リセットをキャンセル
+        return  # Cancel reset if user selects "No"
 
-    # テーブルをクリアしてデフォルト値を設定
+    # Clear the table and set default values
     table.setRowCount(0)
     for button_info in DEFAULT_SETTINGS["buttons"]:
         add_new_row(table)
@@ -55,19 +57,22 @@ def reset_settings(table, shortcut_edit, auto_popup_enabled, auto_popup_delay_ed
         table.item(row, 2).setText(button_info["label"])
         table.item(row, 3).setText(button_info["url"])
 
-    # ショートカットキーをデフォルト値に設定
+    # Set default shortcut key
     shortcut_edit.setKeySequence(QKeySequence(DEFAULT_SETTINGS["shortcut"]))
 
-    # 自動ポップアップ設定をデフォルト値に設定
+    # Set default auto-popup settings
     auto_popup_enabled.setChecked(DEFAULT_SETTINGS["auto_popup_enabled"])
     auto_popup_delay_edit.setValue(DEFAULT_SETTINGS["auto_popup_delay"])
 
-    # ユーザーに通知
+    # Notify the user
     QMessageBox.information(
         mw, "Settings Reset", "Settings have been reset to default values. Click 'Save' to apply these changes.")
 
 
 def open_settings():
+    """
+    Open the settings dialog for the add-on.
+    """
     settings = load_settings()
 
     dialog = QDialog(mw)
@@ -179,7 +184,7 @@ def open_settings():
 
     add_button = QPushButton("Add")
     save_button = QPushButton("Save")
-    reset_button = QPushButton("Reset to Default")  # リセットボタンを追加
+    reset_button = QPushButton("Reset to Default")
     add_button.clicked.connect(lambda: add_new_row(table))
     save_button.clicked.connect(
         lambda: save_settings_from_table(
@@ -195,7 +200,7 @@ def open_settings():
     button_layout.addWidget(move_down_button, 1, 0)
     button_layout.addWidget(add_button, 0, 1)
     button_layout.addWidget(save_button, 1, 1)
-    button_layout.addWidget(reset_button, 2, 1)  # リセットボタンを配置
+    button_layout.addWidget(reset_button, 2, 1)
 
     layout.addWidget(table)
     layout.addLayout(button_layout)
@@ -208,15 +213,18 @@ def open_settings():
 
 
 def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit):
+    """
+    Save the settings from the table to the configuration.
+    """
     confirm = QMessageBox.question(mw, "Save Settings", "Are you sure you want to save these settings?",
                                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
     if confirm == QMessageBox.StandardButton.No:
         return
 
-    # ショートカットキーの競合をチェック
+    # Check for shortcut conflicts
     shortcut = shortcut_edit.keySequence().toString()
     if check_shortcut_conflict(shortcut):
-        return  # 競合がある場合は保存を中止
+        return  # Abort save if there is a conflict
 
     settings = {"buttons": []}
     labels = set()
@@ -251,11 +259,14 @@ def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, a
     settings["auto_popup_delay"] = auto_popup_delay_edit.value()
 
     save_settings(settings)
-    setup_shortcut()  # ショートカットを更新
+    setup_shortcut()  # Update the shortcut
     dialog.accept()
 
 
 def confirm_close(event, table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit):
+    """
+    Confirm if the user wants to save changes before closing the settings dialog.
+    """
     current_settings = {"buttons": []}
     for row in range(table.rowCount()):
         label_item = table.item(row, 2)
@@ -298,7 +309,11 @@ def confirm_close(event, table, dialog, shortcut_edit, auto_popup_enabled, auto_
 
 
 def on_config_action():
+    """
+    Open the settings dialog when the user clicks on the add-on's configuration button.
+    """
     open_settings()
 
 
+# Register the configuration action with Anki
 mw.addonManager.setConfigAction(__name__, on_config_action)

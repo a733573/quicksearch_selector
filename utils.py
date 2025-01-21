@@ -18,21 +18,21 @@ DEFAULT_SETTINGS = {
 
 def get_existing_shortcuts():
     """
-    Ankiや他のアドオンで既に登録されているショートカットキーを取得します。
-    アドオン自身のショートカットは除外します。
+    Retrieve existing shortcut keys registered by Anki or other add-ons.
+    Excludes the shortcut key used by this add-on.
     """
     existing_shortcuts = set()
 
-    # Ankiのデフォルトショートカットキーを取得
+    # Get default shortcut keys from Anki
     for action in mw.findChildren(QAction):
         if action.shortcut():
             shortcut = action.shortcut().toString()
             existing_shortcuts.add(shortcut)
 
-    # 他のアドオンで登録されたショートカットキーを取得
+    # Get shortcut keys registered by other add-ons
     for child in mw.findChildren(QShortcut):
         if child.key().toString():
-            # アドオン自身のショートカットは除外
+            # Exclude this add-on's shortcut
             if not hasattr(child, "objectName") or child.objectName() != "search_selected_text_shortcut":
                 shortcut = child.key().toString()
                 existing_shortcuts.add(shortcut)
@@ -42,7 +42,7 @@ def get_existing_shortcuts():
 
 def check_shortcut_conflict(new_shortcut):
     """
-    新しいショートカットキーが既存のショートカットキーと競合していないかを確認します。
+    Check if the new shortcut key conflicts with existing shortcut keys.
     """
     existing_shortcuts = get_existing_shortcuts()
     if new_shortcut in existing_shortcuts:
