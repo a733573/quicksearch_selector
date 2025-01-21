@@ -76,7 +76,7 @@ def open_settings():
     settings = load_settings()
 
     dialog = QDialog(mw)
-    dialog.setWindowTitle("Popup Search Settings")
+    dialog.setWindowTitle("QuickSearch Selector Config")
     dialog.resize(600, 400)
     layout = QVBoxLayout()
 
@@ -106,7 +106,7 @@ def open_settings():
     table = QTableWidget()
     table.setColumnCount(4)
     table.setHorizontalHeaderLabels(
-        ["Delete", "Enabled", "Label", "URL (must contain %s)"])
+        ["Delete", "Enabled", "Label", "URL (must contain %s, which will be replaced by the selected text)"])
     table.setRowCount(len(settings["buttons"]))
     table.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
     table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
