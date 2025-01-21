@@ -11,5 +11,7 @@
       "enabled": true
     }
   ],
-  "shortcut": "Ctrl+Shift+S"
+  "shortcut": "Ctrl+Shift+S",
+  "auto_popup_enabled": true,
+  "auto_popup_delay": 1000
 }

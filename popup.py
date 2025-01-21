@@ -2,7 +2,7 @@ from aqt.qt import *
 from aqt import mw
 import aqt.utils
 import webbrowser
-from .utils import load_settings
+from .utils import load_settings, DEFAULT_SETTINGS  # DEFAULT_SETTINGS を追加
 from aqt.utils import showInfo
 
 # グローバル変数としてタイマーを定義
@@ -130,18 +130,22 @@ def setup_shortcut():
 
 def on_selection_changed():
     global popup_timer
+    settings = load_settings()
+    if not settings.get("auto_popup_enabled", DEFAULT_SETTINGS["auto_popup_enabled"]):
+        return
+
     webview = mw.web
     text = webview.selectedText().strip()
 
     # マウスの左ボタンが離れていることと選択中のテキストが空でないことを確認
-    # if QApplication.mouseButtons() == Qt.MouseButton.NoButton and text:
     if text:
         if popup_timer:
             popup_timer.stop()
         popup_timer = QTimer()
         popup_timer.setSingleShot(True)
         popup_timer.timeout.connect(lambda: handle_selection_timeout(webview))
-        popup_timer.start(1000)  # 1秒待機
+        popup_timer.start(settings.get("auto_popup_delay",
+                          DEFAULT_SETTINGS["auto_popup_delay"]))  # 設定された時間待機
 
 
 def handle_selection_timeout(webview):

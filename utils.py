@@ -6,10 +6,11 @@ from aqt.utils import showInfo
 DEFAULT_SETTINGS = {
     "buttons": [
         {"label": "Google", "url": "https://www.google.com/search?q=%s", "enabled": True},
-        {"label": "Wiktionary",
-            "url": "https://en.wiktionary.org/wiki/%s", "enabled": True}
+        {"label": "Wiktionary", "url": "https://en.wiktionary.org/wiki/%s", "enabled": True}
     ],
     "shortcut": "Ctrl+Shift+S",
+    "auto_popup_enabled": True,  # 自動ポップアップのオンオフ
+    "auto_popup_delay": 1000  # タイマーの時間（ミリ秒）
 }
 
 
