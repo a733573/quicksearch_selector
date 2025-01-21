@@ -31,6 +31,42 @@ def add_new_row(table):
     table.setItem(row, 3, QTableWidgetItem(""))
 
 
+def reset_settings(table, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit):
+    """
+    設定をデフォルト値にリセットしますが、保存はしません。
+    リセット前にユーザーに確認を求めます。
+    """
+    # ユーザーに確認
+    confirm = QMessageBox.question(
+        mw,
+        "Confirm Reset",
+        "Are you sure you want to reset settings to default values?",
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+    )
+    if confirm != QMessageBox.StandardButton.Yes:
+        return  # ユーザーが「No」を選択した場合、リセットをキャンセル
+
+    # テーブルをクリアしてデフォルト値を設定
+    table.setRowCount(0)
+    for button_info in DEFAULT_SETTINGS["buttons"]:
+        add_new_row(table)
+        row = table.rowCount() - 1
+        table.cellWidget(row, 1).setChecked(button_info.get("enabled", True))
+        table.item(row, 2).setText(button_info["label"])
+        table.item(row, 3).setText(button_info["url"])
+
+    # ショートカットキーをデフォルト値に設定
+    shortcut_edit.setKeySequence(QKeySequence(DEFAULT_SETTINGS["shortcut"]))
+
+    # 自動ポップアップ設定をデフォルト値に設定
+    auto_popup_enabled.setChecked(DEFAULT_SETTINGS["auto_popup_enabled"])
+    auto_popup_delay_edit.setValue(DEFAULT_SETTINGS["auto_popup_delay"])
+
+    # ユーザーに通知
+    QMessageBox.information(
+        mw, "Settings Reset", "Settings have been reset to default values. Click 'Save' to apply these changes.")
+
+
 def open_settings():
     settings = load_settings()
 
@@ -143,10 +179,15 @@ def open_settings():
 
     add_button = QPushButton("Add")
     save_button = QPushButton("Save")
+    reset_button = QPushButton("Reset to Default")  # リセットボタンを追加
     add_button.clicked.connect(lambda: add_new_row(table))
     save_button.clicked.connect(
         lambda: save_settings_from_table(
             table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit)
+    )
+    reset_button.clicked.connect(
+        lambda: reset_settings(table, shortcut_edit,
+                               auto_popup_enabled, auto_popup_delay_edit)
     )
 
     button_layout = QGridLayout()
@@ -154,6 +195,7 @@ def open_settings():
     button_layout.addWidget(move_down_button, 1, 0)
     button_layout.addWidget(add_button, 0, 1)
     button_layout.addWidget(save_button, 1, 1)
+    button_layout.addWidget(reset_button, 2, 1)  # リセットボタンを配置
 
     layout.addWidget(table)
     layout.addLayout(button_layout)
