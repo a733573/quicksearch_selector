@@ -21,7 +21,7 @@ This add-on allows you to quickly search selected text using predefined online t
 
 ## Installation
 
-1. Download the latest release from the [GitHub repository](https://github.com/a733573/quicksearch_selector).
+1. Download the latest release from the [releases page](https://github.com/a733573/quicksearch_selector/releases).
 2. Open Anki and go to `Tools > Add-ons > Install from File`.
 3. Select the downloaded `.ankiaddon` file.
 
@@ -52,6 +52,11 @@ This add-on allows you to quickly search selected text using predefined online t
 
 - If the shortcut key doesn't work, ensure it doesn't conflict with other shortcuts in Anki.
 - If the auto-popup doesn't trigger, check the delay setting and ensure it's enabled.
+
+## Releases
+
+- The latest version of this add-on can be downloaded from the [releases page](https://github.com/a733573/quicksearch_selector/releases).
+- Each release includes a `.ankiaddon` file for easy installation.
 
 ## License
 
