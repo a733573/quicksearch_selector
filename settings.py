@@ -1,6 +1,6 @@
 from aqt.qt import *
 from aqt import mw
-from .utils import load_settings, save_settings, validate_url, DEFAULT_SETTINGS
+from .utils import load_settings, save_settings, validate_url, DEFAULT_SETTINGS, check_shortcut_conflict
 from .popup import setup_shortcut
 
 
@@ -213,6 +213,11 @@ def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, a
     if confirm == QMessageBox.StandardButton.No:
         return
 
+    # ショートカットキーの競合をチェック
+    shortcut = shortcut_edit.keySequence().toString()
+    if check_shortcut_conflict(shortcut):
+        return  # 競合がある場合は保存を中止
+
     settings = {"buttons": []}
     labels = set()
     for row in range(table.rowCount()):
@@ -241,18 +246,12 @@ def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, a
             settings["buttons"].append(
                 {"label": label, "url": url, "enabled": enabled})
 
-    shortcut = shortcut_edit.keySequence().toString()
-    if not shortcut:
-        QMessageBox.warning(
-            mw, "Invalid Shortcut", "Shortcut key cannot be empty. Using default shortcut.")
-        shortcut = DEFAULT_SETTINGS["shortcut"]
     settings["shortcut"] = shortcut
-
     settings["auto_popup_enabled"] = auto_popup_enabled.isChecked()
     settings["auto_popup_delay"] = auto_popup_delay_edit.value()
 
     save_settings(settings)
-    setup_shortcut()  # Update the shortcut immediately after saving settings
+    setup_shortcut()  # ショートカットを更新
     dialog.accept()
 
 

@@ -1,7 +1,7 @@
 from aqt.qt import *
 from aqt import mw
 import webbrowser
-from .utils import load_settings, DEFAULT_SETTINGS
+from .utils import load_settings, DEFAULT_SETTINGS, check_shortcut_conflict
 
 popup_timer = None
 current_shortcut = None  # Track the current shortcut
@@ -126,14 +126,16 @@ def setup_shortcut():
     settings = load_settings()
     shortcut_key = settings.get("shortcut", DEFAULT_SETTINGS["shortcut"])
 
-    # Remove the previous shortcut if it exists
+    # 既存のショートカットを削除
     if current_shortcut:
-        current_shortcut.setEnabled(False)  # Disable the previous shortcut
-        current_shortcut.deleteLater()  # Schedule for deletion
+        current_shortcut.setEnabled(False)
+        current_shortcut.deleteLater()
         current_shortcut = None
 
-    # Create a new shortcut with the updated key
+    # 新しいショートカットを設定
     current_shortcut = QShortcut(QKeySequence(shortcut_key), mw)
+    current_shortcut.setObjectName(
+        "search_selected_text_shortcut")  # アドオンのショートカットを識別するための名前
     current_shortcut.activated.connect(on_shortcut_triggered)
 
 

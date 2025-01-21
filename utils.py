@@ -1,6 +1,8 @@
 import re
 from aqt import mw
 from urllib.parse import urlparse
+from aqt.utils import showWarning
+from aqt.qt import QShortcut, QAction
 
 # Default settings for the add-on
 DEFAULT_SETTINGS = {
@@ -12,6 +14,44 @@ DEFAULT_SETTINGS = {
     "auto_popup_enabled": True,  # Enable/disable auto-popup
     "auto_popup_delay": 1000  # Delay in milliseconds for the auto-popup
 }
+
+
+def get_existing_shortcuts():
+    """
+    Ankiや他のアドオンで既に登録されているショートカットキーを取得します。
+    アドオン自身のショートカットは除外します。
+    """
+    existing_shortcuts = set()
+
+    # Ankiのデフォルトショートカットキーを取得
+    for action in mw.findChildren(QAction):
+        if action.shortcut():
+            shortcut = action.shortcut().toString()
+            existing_shortcuts.add(shortcut)
+
+    # 他のアドオンで登録されたショートカットキーを取得
+    for child in mw.findChildren(QShortcut):
+        if child.key().toString():
+            # アドオン自身のショートカットは除外
+            if not hasattr(child, "objectName") or child.objectName() != "search_selected_text_shortcut":
+                shortcut = child.key().toString()
+                existing_shortcuts.add(shortcut)
+
+    return existing_shortcuts
+
+
+def check_shortcut_conflict(new_shortcut):
+    """
+    新しいショートカットキーが既存のショートカットキーと競合していないかを確認します。
+    """
+    existing_shortcuts = get_existing_shortcuts()
+    if new_shortcut in existing_shortcuts:
+        showWarning(
+            f"The shortcut '{new_shortcut}' is already in use. "
+            "Please choose a different shortcut."
+        )
+        return True
+    return False
 
 
 def load_settings():
