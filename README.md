@@ -1,10 +1,11 @@
 # QuickSearch Selector Add-on for Anki
 
-This add-on allows you to quickly search selected text using predefined search engines. It also supports auto-popup functionality that triggers when text is selected.
+This add-on allows you to quickly search selected text using predefined online tools and search engines. It also supports auto-popup functionality that triggers when text is selected.
 
 ## Features
 
-- **Customizable Search Engines**: Add, remove, or modify search engines in the config.
+- **Search Selected Text with Your Favorite Tools**: Select any text in Anki and search it using your preferred online tools (e.g., Google, Wiktionary, Oxford Learner's Dictionaries, YouGlish, etc.).
+- **Customizable Search Tools**: Add, remove, or modify search tools in the config.
 - **Shortcut Key**: Trigger the popup with a customizable shortcut key.
 - **Auto-Popup**: Automatically show the popup when text is selected (configurable delay).
 
@@ -30,17 +31,22 @@ This add-on allows you to quickly search selected text using predefined search e
 
    - Select text in Anki.
    - Use the configured shortcut key (`Ctrl+Shift+S` by default) to open the popup.
-   - Click on a search button to open the selected text in the corresponding search engine.
+   - Click on a search button to open the selected text in the corresponding tool.
 
 2. **Auto-Popup**:
    - Select text in Anki.
    - After a configurable delay (default: 1000ms), the popup will automatically appear.
-   - Click on a search button to open the selected text in the corresponding search engine.
+   - Click on a search button to open the selected text in the corresponding tool.
 
 ## Configuration
 
 - Go to `Tools > Add-ons > QuickSearch Selector > Config` to customize settings.
-- Add or remove search buttons, change the shortcut key, and configure auto-popup settings.
+- Add or remove search tools, change the shortcut key, and configure auto-popup settings.
+- Supported tools include:
+  - **Search Engines**: Google, Google Images
+  - **Dictionaries**: Wiktionary, Oxford Learner's Dictionaries
+  - **Pronunciation Tools**: YouGlish
+  - **Translation Tools**: DeepL (English to Japanese)
 
 ## Troubleshooting
 
