@@ -1,7 +1,7 @@
 from aqt.qt import *
 from aqt import mw
 import webbrowser
-from .utils import load_settings, DEFAULT_SETTINGS, check_shortcut_conflict
+from .utils import load_settings, DEFAULT_SETTINGS
 
 popup_timer = None
 current_shortcut = None  # Track the current shortcut
@@ -66,10 +66,11 @@ def show_popup(text, pos):
     popup_x = pos.x()
     popup_y = pos.y()
 
+    # ポップアップが画面外に出ないように調整
     if popup_x + popup_width > screen_geometry.width():
-        popup_x = pos.x() - popup_width
+        popup_x = screen_geometry.width() - popup_width
     if popup_y + popup_height > screen_geometry.height():
-        popup_y = pos.y() - popup_height
+        popup_y = screen_geometry.height() - popup_height
 
     dialog.move(popup_x, popup_y)
     dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
@@ -100,8 +101,10 @@ js_code = """
     const selection = window.getSelection();
     if (selection.rangeCount === 0) return null;
     const range = selection.getRangeAt(0);
-    const rect = range.getBoundingClientRect();
-    return { x: rect.right, y: rect.bottom };
+    const rects = range.getClientRects();
+    if (rects.length === 0) return null;
+    const lastRect = rects[rects.length - 1];
+    return { x: lastRect.right, y: lastRect.bottom };
 })();
 """
 
