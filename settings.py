@@ -166,6 +166,11 @@ def open_settings():
 
 
 def save_settings_from_table(table, dialog, shortcut_edit, auto_popup_enabled, auto_popup_delay_edit):
+    confirm = QMessageBox.question(mw, "Save Settings", "Are you sure you want to save these settings?",
+                                   QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+    if confirm == QMessageBox.StandardButton.No:
+        return
+
     settings = {"buttons": []}
     labels = set()
     for row in range(table.rowCount()):
