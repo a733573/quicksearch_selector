@@ -4,7 +4,7 @@ This add-on allows you to quickly search selected text using predefined search e
 
 ## Features
 
-- **Customizable Search Buttons**: Add, remove, or modify search engines in the config.
+- **Customizable Search Engines**: Add, remove, or modify search engines in the config.
 - **Shortcut Key**: Trigger the popup with a customizable shortcut key.
 - **Auto-Popup**: Automatically show the popup when text is selected (configurable delay).
 
@@ -14,7 +14,7 @@ This add-on allows you to quickly search selected text using predefined search e
 
 ![QuickSearch Selector Screenshot 1](./images/screenshot_1.png)
 
-### Configuration Settings
+### QuickSearch Selector Config
 
 ![QuickSearch Selector Screenshot 2](./images/screenshot_2.png)
 
